@@ -229,8 +229,9 @@ class DECA(nn.Module):
         if return_vis:
             ## render shape
             shape_images, _, grid, alpha_images = self.render.render_shape(verts, trans_verts, h=h, w=w, images=background, return_grid=True)
-            detail_normal_images = F.grid_sample(uv_detail_normals, grid, align_corners=False)*alpha_images
-            shape_detail_images = self.render.render_shape(verts, trans_verts, detail_normal_images=detail_normal_images, h=h, w=w, images=background)
+            if use_detail:
+                detail_normal_images = F.grid_sample(uv_detail_normals, grid, align_corners=False)*alpha_images
+                shape_detail_images = self.render.render_shape(verts, trans_verts, detail_normal_images=detail_normal_images, h=h, w=w, images=background)
             
             ## extract texture
             ## TODO: current resolution 256x256, support higher resolution, and add visibility
@@ -251,8 +252,9 @@ class DECA(nn.Module):
                 'landmarks2d': util.tensor_vis_landmarks(images, landmarks2d),
                 'landmarks3d': util.tensor_vis_landmarks(images, landmarks3d),
                 'shape_images': shape_images,
-                'shape_detail_images': shape_detail_images
             }
+            if use_detail:
+                visdict['shape_detail_images'] = shape_detail_images
             if self.cfg.model.use_tex:
                 visdict['rendered_images'] = ops['images']
 
